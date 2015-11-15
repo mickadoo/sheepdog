@@ -1,0 +1,19 @@
+{
+  "name": "sheepdog",
+  "version": "0.0.0",
+  "description": "Protects the yard",
+  "main": "app.js",
+  "dependencies": {
+    "body-parser": "~1.14.1",
+    "express": "~4.13.3",
+    "jsonwebtoken": "~5.4.1",
+    "oauth2-server": "~2.4.1"
+  },
+  "devDependencies": {},
+  "repository": "not public yet",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Michael Devery",
+  "license": "BSD-2-Clause"
+}

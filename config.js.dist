@@ -1,0 +1,4 @@
+var config = {};
+config.client_secret = 'YOUR SECRET';
+config.client_name = 'YOUR APP NAME';
+module.exports = config;
