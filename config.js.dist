@@ -1,4 +1,5 @@
 var config = {};
+config.client_id = 'YOUR APP ID';
 config.client_secret = 'YOUR SECRET';
-config.client_name = 'YOUR APP NAME';
+config.audience_name = 'YOUR APP AUDIENCE';
 module.exports = config;

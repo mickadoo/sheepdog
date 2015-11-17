@@ -1,0 +1,17 @@
+<html>
+    <head>
+        <title>Login</title>
+        <script src="../script/login.js"></script>
+    </head>
+    <body>
+        <h1>Login Form</h1>
+        <form onsubmit="event.preventDefault(); login(this);">
+            <label for="username">Username</label>
+            <input type="text" name="username" id="username" value="">
+            <label for="password">Password</label>
+            <input type="password" name="password" id="password" value="">
+            <input type="hidden" name="grant_type" value="password">
+            <button type="submit">Log In</button>
+        </form>
+    </body>
+</html>

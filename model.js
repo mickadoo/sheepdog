@@ -21,7 +21,7 @@ var oauthAccessTokens = [],
     },
     users = [
         {
-            id : 'TESTUUID13934',
+            id : 1,
             username: 'test',
             password: 'user'
         }
@@ -111,6 +111,6 @@ model.getUser = function (username, password, callback) {
 };
 
 model.generateToken = function (type, request, callback) {
-    var token = jwt.sign({ userId: request.user.id , aud: config.client_name }, config.client_secret);
+    var token = jwt.sign({ userId: request.user.id , aud: config.audience_name }, config.client_secret);
     callback(false, token);
 };
