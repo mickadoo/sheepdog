@@ -1,6 +1,6 @@
 function login(loginForm) {
 
-    var username = loginForm.elements['username'].value;
+    var email = loginForm.elements['email'].value;
     var password = loginForm.elements['password'].value;
     var xhttp = new XMLHttpRequest();
 
@@ -16,12 +16,12 @@ function login(loginForm) {
                 debugBox.innerHTML = accessToken + '<br>';
                 loginForm.appendChild(debugBox);
             } else {
-                alert('Login Failed: ' + xhttp.status);
+                alert('Login Failed: ' + xhttp.responseText);
             }
         }
     };
 
     xhttp.open("POST", "http://localhost:3000/oauth/token", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhttp.send("username="+username+"&password="+password+"&client_id=local&grant_type=password");
+    xhttp.send("username="+email+"&password="+password+"&client_id=local&grant_type=password");
 }
