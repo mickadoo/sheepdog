@@ -11,17 +11,22 @@ var express = require('express');
     FacebookStrategy = require('passport-facebook').Strategy;
     User = mongoose.model('OAuthUsers');
     Client = mongoose.model('OAuthClients');
+    Token = mongoose.model('OAuthAccessTokens');
 
 var app = express();
 
-/**
- * -------------------------------------------------------
- * ---------------     PASSPORT      ---------------------
- * -------------------------------------------------------
- */
-
 app.use(passport.initialize());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use('/script', express.static(__dirname + '/script'));
+
 mongoose.connect(dbConfig.url);
+
+app.oauth = oauthserver({
+    model: memorystore,
+    grants: ['password'],
+    debug: true
+});
 
 passport.serializeUser(function(user, done) {
     done(null, user._id);
@@ -42,9 +47,6 @@ passport.use('facebook', new FacebookStrategy({
 
     // facebook will send back the tokens and profile
     function(access_token, refresh_token, profile, done) {
-
-        // todo decide the flow here.. should probably find a user by email and grant a token for them, redirect to main
-        // todo cont.. page but how can set localstorage token
 
         // asynchronous
         process.nextTick(function() {
@@ -77,49 +79,33 @@ passport.use('facebook', new FacebookStrategy({
 );
 
 // route for facebook authentication and login
-// different scopes while logging in
-app.get('/login/facebook',
-    passport.authenticate('facebook', { scope : 'email' }
-    ));
+app.get('/login/facebook', passport.authenticate('facebook', { scope : 'email' }));
 
 // handle the callback after facebook has authenticated the user
 app.get('/login/facebook/callback', passport.authenticate('facebook'), function(req, res) {
-    var token = jwt.sign({ userId: req.user._id , aud: config.audience_name }, config.client_secret);
 
-    res.send(token);
-});
+        memorystore.generateToken('password', req, function(err, token) {
+            var expires = new Date();
+            expires.setSeconds(expires.getSeconds() + fbConfig.accessTokenLifetime);
+            memorystore.saveAccessToken(token, config.clientId, expires, req.user );
 
-/**
- * -------------------------------------------------------
- * -------------------------------------------------------
- * -------------------------------------------------------
- */
+            var loginUrl = 'http://login.yarnyard.dev'; // temporary since redirect will bring them to localhost..
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use('/script', express.static(__dirname + '/script'));
-
-app.oauth = oauthserver({
-  model: memorystore,
-  grants: ['password'],
-  debug: true
-});
+            res.redirect(loginUrl + "/success?token=" + token);
+        });
+    }
+);
 
 app.post('/oauth/token', function (req, res) {
 
     req.body.client_id = config.clientId;
     req.body.client_secret = config.clientSecret;
 
-    return app.oauth.grant()(req, res, function(response){
-
-        if (response.name === 'OAuth2Error') {
+    app.oauth.grant()(req, res, function(err){
+        if (err && err.name && err.name === 'OAuth2Error') {
             res.statusCode = 400;
-            res.send(response.message);
-            return;
+            res.send(err.message);
         }
-
-        res.statusCode = response.code;
-        res.send(response);
     });
 });
 
@@ -152,6 +138,14 @@ app.post('/clients', function(req, res) {
     baseClient.save(function (err) {if (err) console.log ('Error on save!')});
 });
 
+app.get('/', function(req, res) {
+    res.redirect('/login');
+});
+
+app.get('/success', function (req, res) {
+    res.sendFile(__dirname + '/view/success.html');
+});
+
 app.get('/secret', app.oauth.authorise(), function (req, res) {
     // this is not used, just an example of showing how to restrict access to auth server resources
     res.send('Secret area\n');
@@ -162,5 +156,4 @@ app.get('/login', function(req, res) {
 });
 
 app.use(app.oauth.errorHandler());
-app.listen(3000);
-
+app.listen('3000');

@@ -94,20 +94,20 @@ model.grantTypeAllowed = function (clientId, grantType, callback) {
   callback(false, true);
 };
 
-model.saveAccessToken = function (token, clientId, expires, userId, callback) {
-  console.log('in saveAccessToken (token: ' + token + ', clientId: ' + clientId + ', userId: ' + userId + ', expires: ' + expires + ')');
+model.saveAccessToken = function (token, clientId, expires, user, callback) {
+  console.log('in saveAccessToken (token: ' + token + ', clientId: ' + clientId + ', userid: ' + user.id + ', expires: ' + expires + ')');
 
   var accessToken = new OAuthAccessTokensModel({
     accessToken: token,
     clientId: clientId,
-    userId: userId,
+    userId: user.id,
     expires: expires
   });
 
   accessToken.save(callback);
 };
 
-/*
+/*Token = mongo
  * Required to support password grant type
  */
 model.getUser = function (email, password, callback) {
@@ -144,6 +144,6 @@ model.getRefreshToken = function (refreshToken, callback) {
 };
 
 model.generateToken = function (type, request, callback) {
-  var token = jwt.sign({ userId: request.user._id , aud: config.audienceName }, config.clientSecret);
+  var token = jwt.sign({ userId: request.user.id , aud: config.audienceName }, config.clientSecret);
   callback(false, token);
 };
