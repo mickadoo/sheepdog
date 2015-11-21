@@ -1,5 +1,0 @@
-var config = {};
-config.client_id = 'YOUR APP ID';
-config.client_secret = 'YOUR SECRET';
-config.audience_name = 'YOUR APP AUDIENCE';
-module.exports = config;
