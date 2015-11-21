@@ -1,5 +1,6 @@
 module.exports = {
     clientId: 'YOUR_APP_CLIENT_ID',
     clientSecret: 'YOUR_APP_CLIENT_SECRET',
-    audienceName: 'local'
+    audienceName: 'local',
+    accessTokenLifetimeSeconds: 1200
 };

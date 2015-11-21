@@ -3,15 +3,12 @@ var express = require('express');
     oauthserver = require('oauth2-server');
     jwt = require('jsonwebtoken');
     mongoose = require('mongoose');
-    passport = require('passport');
     config = require('./config/config.js');
     dbConfig = require('./config/database.js');
-    fbConfig = require('./config/facebook.js');
+    passport = require('./passport.js');
     memorystore = require('./model.js');
-    FacebookStrategy = require('passport-facebook').Strategy;
     User = mongoose.model('OAuthUsers');
     Client = mongoose.model('OAuthClients');
-    Token = mongoose.model('OAuthAccessTokens');
 
 var app = express();
 
@@ -19,6 +16,7 @@ app.use(passport.initialize());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use('/script', express.static(__dirname + '/script'));
+app.use(app.oauth.errorHandler());
 
 mongoose.connect(dbConfig.url);
 
@@ -28,56 +26,6 @@ app.oauth = oauthserver({
     debug: true
 });
 
-passport.serializeUser(function(user, done) {
-    done(null, user._id);
-});
-
-passport.deserializeUser(function(id, done) {
-    User.findById(id, function(err, user) {
-        done(err, user);
-    });
-});
-
-passport.use('facebook', new FacebookStrategy({
-        clientID        : fbConfig.appID,
-        clientSecret    : fbConfig.appSecret,
-        callbackURL     : fbConfig.callbackUrl,
-        profileFields   : ['id', 'email']
-    },
-
-    // facebook will send back the tokens and profile
-    function(access_token, refresh_token, profile, done) {
-
-        // asynchronous
-        process.nextTick(function() {
-
-            // find the user in the database based on their facebook id
-            User.findOne({ 'fb.id' : profile.id }, function(err, user) {
-
-                if (err)
-                    return done(err);
-
-                if (user) {
-                    return done(null, user);
-                } else {
-                    var newUser = new User();
-
-                    newUser.fb.id    = profile.id;
-                    newUser.fb.access_token = access_token;
-                    newUser.fb.email = profile.emails[0].value;
-
-                    newUser.save(function(err) {
-                        if (err)
-                            throw err;
-
-                        return done(null, newUser);
-                    });
-                }
-            });
-        });
-    })
-);
-
 // route for facebook authentication and login
 app.get('/login/facebook', passport.authenticate('facebook', { scope : 'email' }));
 
@@ -86,7 +34,7 @@ app.get('/login/facebook/callback', passport.authenticate('facebook'), function(
 
         memorystore.generateToken('password', req, function(err, token) {
             var expires = new Date();
-            expires.setSeconds(expires.getSeconds() + fbConfig.accessTokenLifetime);
+            expires.setSeconds(expires.getSeconds() + config.accessTokenLifetime);
             memorystore.saveAccessToken(token, config.clientId, expires, req.user );
 
             var loginUrl = 'http://login.yarnyard.dev'; // temporary since redirect will bring them to localhost..
@@ -95,7 +43,6 @@ app.get('/login/facebook/callback', passport.authenticate('facebook'), function(
         });
     }
 );
-
 app.post('/oauth/token', function (req, res) {
 
     req.body.client_id = config.clientId;
@@ -155,5 +102,4 @@ app.get('/login', function(req, res) {
     res.sendFile(__dirname + '/view/login.html');
 });
 
-app.use(app.oauth.errorHandler());
 app.listen('3000');
