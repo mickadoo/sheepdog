@@ -15,8 +15,11 @@
  */
 
 var mongoose = require('mongoose'),
-  Schema = mongoose.Schema,
-  model = module.exports;
+    jwt = require('jsonwebtoken'),
+    config = require('./config/config.js'),
+    Schema = mongoose.Schema,
+    model = module.exports;
+
 
 //
 // Schemas definitions

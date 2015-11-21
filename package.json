@@ -10,7 +10,8 @@
     "oauth2-server": "~2.4.1",
     "passport": "^0.3",
     "passport-facebook": "^2.0",
-    "mongoose": "^4.2"
+    "mongoose": "^4.2",
+    "path": "^0.12"
   },
   "devDependencies": {},
   "repository": "not public yet",

@@ -50,7 +50,7 @@ passport.use(
                         }
 
                         return done(null, newUser);
-                    });
+                    }                    );
                 }
             });
         });
