@@ -44,6 +44,11 @@ var OAuthClientsSchema = new Schema({
   redirectUri: { type: String }
 });
 
+var EmailConfirmationTokenSchema = new Schema({
+  email: { type: String },
+  token: { type: String }
+});
+
 var OAuthUsersSchema = new Schema({
   username: { type: String },
   password: { type: String },
@@ -61,6 +66,7 @@ mongoose.model('OAuthAccessTokens', OAuthAccessTokensSchema);
 mongoose.model('OAuthRefreshTokens', OAuthRefreshTokensSchema);
 mongoose.model('OAuthClients', OAuthClientsSchema);
 mongoose.model('OAuthUsers', OAuthUsersSchema);
+mongoose.model('EmailConfirmationTokens', EmailConfirmationTokenSchema);
 
 var OAuthAccessTokensModel = mongoose.model('OAuthAccessTokens'),
   OAuthRefreshTokensModel = mongoose.model('OAuthRefreshTokens'),
