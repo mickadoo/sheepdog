@@ -2,9 +2,13 @@ var express = require('express'),
     router = express.Router(),
     path = require('path'),
     mongoose = require('mongoose'),
+    crypto = require('crypto'),
+    model = require('../model'),
     EmailConfirmationToken = mongoose.model('EmailConfirmationTokens'),
+    User = mongoose.model('OAuthUsers'),
     config = require('../config/config.js'),
-    app = require('../app.js');
+    app = require('../app.js'),
+    mailer = require('../services/mailer');
 
 router.post('/oauth/token', function (req, res) {
 
@@ -27,22 +31,64 @@ app.post('/register', function (req, res) {
 
     var email = req.body.email;
 
+    var buffer = crypto.randomBytes(256);
+    var randomToken = crypto.createHash('sha1').update(buffer).digest('hex');
+
     var ConfirmationToken = new EmailConfirmationToken({
         email: email,
-        token: 'lalalala'
+        token: randomToken
     });
 
     ConfirmationToken.save(function() {
-        // send email
-        res.send('fooooo');
+        mailer.sendMail(
+            email,
+            'email_confirmation',
+            {
+                "token": randomToken,
+                "email": email
+            }
+        );
+
+        res.statusCode = 204;
+        res.send()
     });
 });
 
-app.get('/confirm-email', function(req, res) {
-    EmailConfirmationToken.findOne({ email: email, token: token }, function() {
-        // create user and notify yarnyard api
+app.get('/set-password', function(req, res) {
+    res.sendFile(path.resolve('view/set-password.html'));
+});
 
-        // create token and redirect to success
+app.post('/set-password', function(req, res) {
+
+    var email = req.body.email,
+        password = req.body.password,
+        confirmationTokenString = req.body.token;
+
+    EmailConfirmationToken.findOne({ email: email, token: confirmationTokenString }, function(error, confirmationToken) {
+
+        if (!confirmationToken) {
+            res.send('Something wrong with your token / email combo');
+
+            return;
+        }
+
+        User.findOne({email: email}, function(error, tokenUser) {
+            if (!tokenUser) {
+                tokenUser = new User ({
+                    email: email,
+                    password: password
+                });
+            } else {
+                tokenUser.password = password;
+            }
+
+            tokenUser.save();
+            confirmationToken.remove();
+
+            model.createToken(tokenUser, function(error, accessToken) {
+                res.redirect("/success?token=" + accessToken.accessToken);
+            });
+        });
     });
 });
 

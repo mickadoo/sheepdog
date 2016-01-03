@@ -20,10 +20,7 @@ var mongoose = require('mongoose'),
     Schema = mongoose.Schema,
     model = module.exports;
 
-
-//
-// Schemas definitions
-//
+// schema definitions
 var OAuthAccessTokensSchema = new Schema({
   accessToken: { type: String },
   clientId: { type: String },
@@ -73,28 +70,42 @@ var OAuthAccessTokensModel = mongoose.model('OAuthAccessTokens'),
   OAuthClientsModel = mongoose.model('OAuthClients'),
   OAuthUsersModel = mongoose.model('OAuthUsers');
 
-//
-// oauth2-server callbacks
-//
-model.getAccessToken = function (bearerToken, callback) {
-  console.log('in getAccessToken (bearerToken: ' + bearerToken + ')');
-
-  OAuthAccessTokensModel.findOne({ accessToken: bearerToken }, callback);
-};
-
-model.getClient = function (clientId, clientSecret, callback) {
-  console.log('in getClient (clientId: ' + clientId + ', clientSecret: ' + clientSecret + ')');
-  if (clientSecret === null) {
-    return OAuthClientsModel.findOne({ clientId: clientId }, callback);
-  }
-  OAuthClientsModel.findOne({ clientId: clientId, clientSecret: clientSecret }, callback);
-};
-
 // This will very much depend on your setup, I wouldn't advise doing anything exactly like this but
 // it gives an example of how to use the method to resrict certain grant types
 var authorizedClientIds = ['local'];
+
+/**
+ * oauth2-server callbacks
+ *
+ * @param bearerToken
+ * @param callback
+ */
+model.getAccessToken = function (bearerToken, callback) {
+  OAuthAccessTokensModel.findOne({ accessToken: bearerToken }, callback);
+};
+
+/**
+ * @param clientId
+ * @param clientSecret
+ * @param callback
+ * @returns {Query|*}
+ */
+model.getClient = function (clientId, clientSecret, callback) {
+  if (clientSecret === null) {
+
+    return OAuthClientsModel.findOne({ clientId: clientId }, callback);
+  }
+
+  return OAuthClientsModel.findOne({ clientId: clientId, clientSecret: clientSecret }, callback);
+};
+
+/**
+ * @param clientId
+ * @param grantType
+ * @param callback
+ * @returns {*}
+ */
 model.grantTypeAllowed = function (clientId, grantType, callback) {
-  console.log('in grantTypeAllowed (clientId: ' + clientId + ', grantType: ' + grantType + ')');
 
   if (grantType === 'password') {
     return callback(false, authorizedClientIds.indexOf(clientId) >= 0);
@@ -103,8 +114,14 @@ model.grantTypeAllowed = function (clientId, grantType, callback) {
   callback(false, true);
 };
 
+/**
+ * @param token
+ * @param clientId
+ * @param expires
+ * @param user
+ * @param callback
+ */
 model.saveAccessToken = function (token, clientId, expires, user, callback) {
-  console.log('in saveAccessToken (token: ' + token + ', clientId: ' + clientId + ', userid: ' + user.id + ', expires: ' + expires + ')');
 
   var accessToken = new OAuthAccessTokensModel({
     accessToken: token,
@@ -116,11 +133,14 @@ model.saveAccessToken = function (token, clientId, expires, user, callback) {
   accessToken.save(callback);
 };
 
-/*Token = mongo
+/**
  * Required to support password grant type
+ *
+ * @param email
+ * @param password
+ * @param callback
  */
 model.getUser = function (email, password, callback) {
-  console.log('in getUser (username: ' + email + ', password: ' + password + ')');
 
   OAuthUsersModel.findOne({ email: email, password: password }, function(err, user) {
     if(err) return callback(err);
@@ -130,11 +150,16 @@ model.getUser = function (email, password, callback) {
   });
 };
 
-/*
+/**
  * Required to support refreshToken grant type
+ *
+ * @param token
+ * @param clientId
+ * @param expires
+ * @param userId
+ * @param callback
  */
 model.saveRefreshToken = function (token, clientId, expires, userId, callback) {
-  console.log('in saveRefreshToken (token: ' + token + ', clientId: ' + clientId +', userId: ' + userId + ', expires: ' + expires + ')');
 
   var refreshToken = new OAuthRefreshTokensModel({
     refreshToken: token,
@@ -146,13 +171,43 @@ model.saveRefreshToken = function (token, clientId, expires, userId, callback) {
   refreshToken.save(callback);
 };
 
+/**
+ * @param refreshToken
+ * @param callback
+ */
 model.getRefreshToken = function (refreshToken, callback) {
-  console.log('in getRefreshToken (refreshToken: ' + refreshToken + ')');
 
   OAuthRefreshTokensModel.findOne({ refreshToken: refreshToken }, callback);
 };
 
+/**
+ * @param user
+ * @param callback
+ */
+model.createToken = function(user, callback) {
+  var tokenString = getJwtToken(user);
+  var expires = new Date();
+  expires.setSeconds(expires.getSeconds() + config.accessTokenLifetime);
+
+  model.saveAccessToken(tokenString, config.clientId, expires, user, callback );
+};
+
+/**
+ * Override for default token generation in oauth2-server/token.js
+ *
+ * @param type
+ * @param request
+ * @param callback
+ */
 model.generateToken = function (type, request, callback) {
-  var token = jwt.sign({ userId: request.user.id , aud: config.audienceName }, config.clientSecret);
+  var token = getJwtToken(request.user);
+
   callback(false, token);
 };
+
+/**
+ * @param user
+ */
+function getJwtToken (user) {
+  return jwt.sign({ userId: user.id , aud: config.audienceName }, config.clientSecret);
+}

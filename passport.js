@@ -38,19 +38,28 @@ passport.use(
                 if (user) {
                     return done(null, user);
                 } else {
-                    var newUser = new User();
-                    newUser.fb.id    = profile.id;
-                    newUser.fb.access_token = access_token;
-                    newUser.fb.email = profile.emails[0].value;
-                    newUser.email = newUser.fb.email;
 
-                    newUser.save(function(err) {
-                        if (err) {
-                            throw err;
+                    var primaryEmail = profile.emails[0].value;
+
+                    User.findOne({ 'email' : primaryEmail }, function(err, facebookUser) {
+
+                        if (!facebookUser) {
+                            facebookUser = new User();
                         }
 
-                        return done(null, newUser);
-                    }                    );
+                        facebookUser.email = primaryEmail;
+                        facebookUser.fb.id    = profile.id;
+                        facebookUser.fb.access_token = access_token;
+                        facebookUser.fb.email = primaryEmail;
+
+                        facebookUser.save(function(err) {
+                            if (err) {
+                                throw err;
+                            }
+
+                            return done(null, facebookUser);
+                        });
+                    });
                 }
             });
         });

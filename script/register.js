@@ -6,7 +6,7 @@ function register(loginForm) {
     xhttp.onreadystatechange = function () {
         // state 4 = done
         if (xhttp.readyState === 4) {
-            if (xhttp.status === 200) {
+            if (xhttp.status === 204) {
                 alert("Check ya email!");
             } else {
                 alert('Registration Failed: ' + xhttp.responseText);
