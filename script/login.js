@@ -16,7 +16,7 @@ function login(loginForm) {
         }
     };
 
-    xhttp.open("POST", "http://login.yarnyard.dev/oauth/token", true);
+    xhttp.open("POST", "https://login.yarnyard.test/oauth/token", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send("username="+email+"&password="+password+"&client_id=local&grant_type=password");
 }

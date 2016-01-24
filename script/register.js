@@ -14,7 +14,7 @@ function register(loginForm) {
         }
     };
 
-    xhttp.open("POST", "http://login.yarnyard.dev/register", true);
+    xhttp.open("POST", "https://login.yarnyard.test/register", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send("email="+email);
 }

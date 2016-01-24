@@ -1,7 +1,7 @@
 var accessToken = getParameterByName('token');
-    redirectUrl = getParameterByName('redirectUrl', 'http://api.yarnyard.dev/api/doc'); // todo temp value
+    redirectUrl = getParameterByName('redirectUrl', 'https://api.yarnyard.test/api/doc'); // todo temp value
 
 if (!accessToken) alert ("No token found! Fail..");
 
-document.cookie="yarnyardAccessToken=" + accessToken + "; domain=yarnyard.dev";
+document.cookie="yarnyardAccessToken=" + accessToken + "; domain=yarnyard.test";
 window.location = redirectUrl;
