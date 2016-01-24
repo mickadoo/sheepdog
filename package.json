@@ -11,7 +11,8 @@
     "passport": "^0.3",
     "passport-facebook": "^2.0",
     "mongoose": "^4.2",
-    "path": "^0.12"
+    "path": "^0.12",
+    "amqp": "^0.2.4"
   },
   "devDependencies": {},
   "repository": "not public yet",

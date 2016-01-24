@@ -3,5 +3,11 @@ module.exports = {
     clientSecret: 'YOUR_APP_CLIENT_SECRET',
     audienceName: 'local',
     accessTokenLifetimeSeconds: 1200,
-    mailerUrl: "mailer.dev"
+    rabbitMq: {
+        username: 'guest',
+        password: 'guest',
+        host: 'rabbit',
+        port: 5672,
+        queue: 'yarnyard'
+    }
 };
