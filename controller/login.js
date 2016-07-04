@@ -8,7 +8,8 @@ var express = require('express'),
     User = mongoose.model('OAuthUsers'),
     config = require('../config/config.js'),
     app = require('../app.js'),
-    mailer = require('../services/mailer');
+    mailer = require('../services/mailer'),
+    rabbit = require('../services/rabbit');
 
 router.post('/oauth/token', function (req, res) {
 
@@ -84,6 +85,23 @@ app.post('/set-password', function(req, res) {
 
             tokenUser.save();
             confirmationToken.remove();
+
+            // todo move to service
+            var body = JSON.stringify({
+                'event': 'email.changed',
+                'data': {
+                    'user': tokenUser
+                }
+            }, function (key,value) {
+                if (key=="password") {
+                    return undefined;
+                }
+
+                return value;
+            });
+
+            // email updated event
+            rabbit.getConnection().publish('yarnyard', body);
 
             model.createToken(tokenUser, function(error, accessToken) {
                 res.redirect("/success?token=" + accessToken.accessToken);
