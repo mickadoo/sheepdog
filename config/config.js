@@ -1,4 +1,5 @@
 module.exports = {
+    nodePort: process.env.AUTH_CLIENT || '80',
     clientId: process.env.AUTH_CLIENT || 'local',
     clientSecret: process.env.AUTH_SECRET || 'test',
     audienceName: process.env.AUTH_AUDIENCE || 'local',

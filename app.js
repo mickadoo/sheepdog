@@ -3,6 +3,7 @@ var express = require('express'),
     oauthserver = require('oauth2-server'),
     mongoose = require('mongoose'),
     dbConfig = require('./config/database.js'),
+    appConfig = require('./config/config.js'),
     passport = require('./passport.js'),
     memorystore = require('./model.js');
 
@@ -28,6 +29,6 @@ app.get('/', function(req, res) {
     res.redirect('/login');
 });
 
-app.listen('3000');
+app.listen(appConfig.nodePort);
 
-console.log("listening on port 3000");
+console.log("listening on port " + appConfig.nodePort);
