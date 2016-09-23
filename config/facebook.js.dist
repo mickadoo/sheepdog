@@ -1,5 +1,0 @@
-module.exports = {
-    appID : '<FACEBOOK_APP_ID>',
-    appSecret : '<FACEBOOK_APP_SECRET>',
-    callbackUrl : 'http://localhost:3000/login/facebook/callback'
-};
