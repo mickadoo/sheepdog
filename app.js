@@ -2,10 +2,10 @@ var express = require('express'),
     bodyParser = require('body-parser'),
     oauthserver = require('oauth2-server'),
     mongoose = require('mongoose'),
-    dbConfig = require('./config/database.js'),
-    appConfig = require('./config/config.js'),
-    passport = require('./passport.js'),
-    memorystore = require('./model.js');
+    dbConfig = require('./config/database'),
+    appConfig = require('./config/config'),
+    passport = require('./passport'),
+    memorystore = require('./model');
 
 var app = module.exports = express();
 
