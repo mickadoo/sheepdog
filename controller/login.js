@@ -84,6 +84,7 @@ app.post('/set-password', function (req, res) {
     }, function (error, confirmationToken) {
 
         if (!confirmationToken) {
+            res.statusCode = 400;
             res.send('Something wrong with your token / email combo');
 
             return;
@@ -120,7 +121,7 @@ app.post('/set-password', function (req, res) {
             rabbit.getConnection().publish('yarnyard', body);
 
             model.createToken(tokenUser, function (error, accessToken) {
-                res.send(JSON.stringify({'tokenaccess': accessToken}));
+                res.send(accessToken);
             });
         });
     });
