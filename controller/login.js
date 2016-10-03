@@ -16,7 +16,7 @@ router.post('/oauth/token', function (req, res) {
     req.body.client_id = config.clientId;
     req.body.client_secret = config.clientSecret;
 
-    app.oauth.grant()(req, res, function(err){
+    app.oauth.grant()(req, res, function (err) {
         if (err && err.name && err.name === 'OAuth2Error') {
             res.statusCode = 400;
             res.send(err.message);
@@ -24,10 +24,16 @@ router.post('/oauth/token', function (req, res) {
     });
 });
 
+/**
+ * GET register is used to display the login form
+ */
 app.get('/register', function (req, res) {
     res.sendFile(path.resolve('view/register.html'));
 });
 
+/**
+ * POST register is used to create a confirmation token and send the email
+ */
 app.post('/register', function (req, res) {
 
     var email = req.body.email;
@@ -40,7 +46,7 @@ app.post('/register', function (req, res) {
         token: randomToken
     });
 
-    ConfirmationToken.save(function() {
+    ConfirmationToken.save(function () {
         mailer.sendMail(
             email,
             'email_confirmation',
@@ -55,17 +61,27 @@ app.post('/register', function (req, res) {
     });
 });
 
-app.get('/set-password', function(req, res) {
+/**
+ * GET set-password is clicked on from email. Passes on confirmation token
+ */
+app.get('/set-password', function (req, res) {
     res.sendFile(path.resolve('view/set-password.html'));
 });
 
-app.post('/set-password', function(req, res) {
+/**
+ * POST set-password accepts e-mail, confirmation token and password to create
+ * a user
+ */
+app.post('/set-password', function (req, res) {
 
     var email = req.body.email,
         password = req.body.password,
         confirmationTokenString = req.body.token;
 
-    EmailConfirmationToken.findOne({ email: email, token: confirmationTokenString }, function(error, confirmationToken) {
+    EmailConfirmationToken.findOne({
+        email: email,
+        token: confirmationTokenString
+    }, function (error, confirmationToken) {
 
         if (!confirmationToken) {
             res.send('Something wrong with your token / email combo');
@@ -73,9 +89,9 @@ app.post('/set-password', function(req, res) {
             return;
         }
 
-        User.findOne({email: email}, function(error, tokenUser) {
+        User.findOne({email: email}, function (error, tokenUser) {
             if (!tokenUser) {
-                tokenUser = new User ({
+                tokenUser = new User({
                     email: email,
                     password: password
                 });
@@ -92,8 +108,8 @@ app.post('/set-password', function(req, res) {
                 'data': {
                     'user': tokenUser
                 }
-            }, function (key,value) {
-                if (key=="password") {
+            }, function (key, value) {
+                if (key == "password") {
                     return undefined;
                 }
 
@@ -103,8 +119,8 @@ app.post('/set-password', function(req, res) {
             // email updated event
             rabbit.getConnection().publish('yarnyard', body);
 
-            model.createToken(tokenUser, function(error, accessToken) {
-                res.redirect("/success?token=" + accessToken.accessToken);
+            model.createToken(tokenUser, function (error, accessToken) {
+                res.send(JSON.stringify({'tokenaccess': accessToken}));
             });
         });
     });
@@ -114,7 +130,7 @@ router.get('/success', function (req, res) {
     res.sendFile(path.resolve('view/success.html'));
 });
 
-router.get('/login', function(req, res) {
+router.get('/login', function (req, res) {
     res.sendFile(path.resolve('view/login.html'));
 });
 
