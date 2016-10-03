@@ -14,8 +14,7 @@ function register(loginForm) {
         }
     };
 
-    // todo remove hardcoded host
-    xhttp.open("POST", "https://login.yarnyard.test/register", true);
+    xhttp.open("POST", "/register", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send("email="+email);
 }

@@ -24,8 +24,7 @@ function getToken(passwordForm) {
         }
     };
 
-    // todo remove hardcoded host
-    xhttp.open("POST", "https://login.yarnyard.test/set-password", true);
+    xhttp.open("POST", "/set-password", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     // todo what about passwords with &, must escape
     xhttp.send("email="+email+"&password="+password+"&token="+token);
