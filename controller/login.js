@@ -47,12 +47,20 @@ app.post('/register', function (req, res) {
     });
 
     ConfirmationToken.save(function () {
+
+        var protocol = 'http://';
+        var host = config.nodeHost;
+        var port = config.nodePort;
+        var setPasswordRoute = '/set-password';
+        var setPasswordLink = protocol + host + ':' + port + setPasswordRoute;
+
         mailer.sendMail(
             email,
             'email_confirmation',
             {
                 "token": randomToken,
-                "email": email
+                "email": email,
+                "auth_host": setPasswordLink
             }
         );
 
